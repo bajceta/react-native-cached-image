@@ -43,7 +43,7 @@ module.exports = (defaultOptions = {}, urlCache = MemoryCache, fs = fsUtils, pat
             })
             // url is not found in the cache or is expired
             .catch(() => {
-                const filePath = path.getImageFilePath(cacheableUrl, options.cacheLocation);
+                const filePath = path.getImageFilePath(cacheableUrl, options.cacheLocation, options.useQueryParamsInCacheKey);
                 // remove expired file if exists
                 return fs.deleteFile(filePath)
                     // get the image to cache (download / copy / etc)

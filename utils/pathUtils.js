@@ -59,9 +59,9 @@ module.exports = {
      * @param cacheLocation
      * @returns {string}
      */
-    getImageFilePath(url, cacheLocation) {
+    getImageFilePath(url, cacheLocation, useQueryParamsInCacheKey) {
         const cachePath = getCachePath(url);
-        const cacheKey = generateCacheKey(url);
+        const cacheKey = generateCacheKey(url, useQueryParamsInCacheKey);
 
         return `${cacheLocation}/${cachePath}/${cacheKey}`;
     },
