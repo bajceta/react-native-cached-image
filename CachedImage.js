@@ -40,6 +40,11 @@ function getImageProps(props) {
 }
 
 const CACHED_IMAGE_REF = 'cachedImage';
+const defaultRenderImage = (props) => { 
+    const imageStyle = props.style;
+    const viewStyle = _.omit(flattenStyle(imageStyle), ['resizeMode']);
+    return (<ImageBackground {...props} style={viewStyle} imageStyle={imageStyle} ref={CACHED_IMAGE_REF} />);
+}
 
 class CachedImage extends React.Component {
 
@@ -52,7 +57,7 @@ class CachedImage extends React.Component {
     };
 
     static defaultProps = {
-            renderImage: props => (<ImageBackground imageStyle={props.style} ref={CACHED_IMAGE_REF} {...props} />),
+            renderImage: defaultRenderImage,
             activityIndicatorProps: {},
     };
 
@@ -188,6 +193,9 @@ class CachedImage extends React.Component {
 
         const activityIndicatorProps = _.omit(this.props.activityIndicatorProps, ['style']);
         const activityIndicatorStyle = this.props.activityIndicatorProps.style || styles.loader;
+        const style = flattenStyle(imageStyle);
+        const loaderStyle = _.omit(style,['resizeMode']);
+
 
         const LoadingIndicator = this.props.loadingIndicator;
 
@@ -198,7 +206,7 @@ class CachedImage extends React.Component {
         if (!source || (Platform.OS === 'android' && flattenStyle(imageStyle).borderRadius)) {
             if (LoadingIndicator) {
                 return (
-                    <View style={[imageStyle, activityIndicatorStyle]}>
+                    <View style={[loaderStyle, activityIndicatorStyle]}>
                         <LoadingIndicator {...activityIndicatorProps} />
                     </View>
                 );
@@ -206,7 +214,7 @@ class CachedImage extends React.Component {
             return (
                 <ActivityIndicator
                     {...activityIndicatorProps}
-                    style={[imageStyle, activityIndicatorStyle]}/>
+                    style={[loaderStyle, activityIndicatorStyle]}/>
             );
         }
         // otherwise render an image with the defaultSource with the ActivityIndicator on top of it
@@ -217,7 +225,7 @@ class CachedImage extends React.Component {
             source,
             children: (
                 LoadingIndicator
-                    ? <View style={[imageStyle, activityIndicatorStyle]}>
+                    ? <View style={[loaderStyle, activityIndicatorStyle]}>
                     <LoadingIndicator {...activityIndicatorProps} />
                 </View>
                     : <ActivityIndicator
