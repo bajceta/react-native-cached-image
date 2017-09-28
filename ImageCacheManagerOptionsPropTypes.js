@@ -11,5 +11,5 @@ module.exports = {
     ]),
     cacheLocation: PropTypes.string,
     allowSelfSignedSSL: PropTypes.bool,
-    urlCache: MemoryCache,
+    urlCache: PropTypes.object,
 };
