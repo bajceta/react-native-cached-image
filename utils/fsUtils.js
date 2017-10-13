@@ -43,6 +43,7 @@ function ensurePath(path) {
         });
 }
 
+
 function collectFilesInfo(basePath) {
     return fs.stat(basePath)
         .then((info) => {
@@ -181,5 +182,9 @@ module.exports = {
                 };
             });
     },
+
+    exists(path) {
+        return fs.exists(path)
+    }
 
 };

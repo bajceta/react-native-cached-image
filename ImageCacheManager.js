@@ -1,7 +1,6 @@
 'use strict';
 
 const _ = require('lodash');
-const fs = require('fs');
 
 const fsUtils = require('./utils/fsUtils');
 const pathUtils = require('./utils/pathUtils');
@@ -35,8 +34,13 @@ module.exports = (defaultOptions = {}, fs = fsUtils, path = pathUtils) => {
         const cacheableUrl = path.getCacheableUrl(url, options.useQueryParamsInCacheKey);
         const filePath = path.getImageFilePath(cacheableUrl, options.cacheLocation);
         
-        return fs.access(filePath)
-          .then(() => filePath)
+        return fsUtils.exists(filePath)
+          .then((exists) => {
+            if (exists) {
+              return filePath;
+            } 
+            throw new Error('file does not exist' , filePath);
+          })
           .catch(() => getCachedFile(filePath)
                    .then(() => filePath))
     }
