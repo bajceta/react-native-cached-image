@@ -32,28 +32,12 @@ module.exports = (defaultOptions = {}, fs = fsUtils, path = pathUtils) => {
         _.defaults(options, defaultOptions);
         // cacheableUrl contains only the needed query params
         const cacheableUrl = path.getCacheableUrl(url, options.useQueryParamsInCacheKey);
-        // note: urlCache may remove the entry if it expired so we need to remove the leftover file manually
-        return options.urlCache.get(cacheableUrl)
-            .then(filePath => {
-                if (!filePath) {
-                    // console.log('ImageCacheManager: cache miss', cacheableUrl);
-                    throw new Error('URL expired or not in cache');
-                }
-                // console.log('ImageCacheManager: cache hit', cacheableUrl);
-                return filePath;
-            })
-            // url is not found in the cache or is expired
-            .catch(() => {
-                const filePath = path.getImageFilePath(cacheableUrl, options.cacheLocation);
-                // remove expired file if exists
-                return fs.deleteFile(filePath)
-                    // get the image to cache (download / copy / etc)
-                    .then(() => getCachedFile(filePath))
-                    // add to cache
-                    .then(() => options.urlCache.set(cacheableUrl, filePath, options.ttl))
-                    // return filePath
-                    .then(() => filePath);
-            });
+        const filePath = path.getImageFilePath(cacheableUrl, options.cacheLocation);
+        
+        return fs.access(filePath)
+          .then(() => filePath)
+          .catch(() => getCachedFile(filePath)
+                   .then(() => filePath))
     }
 
     return {
@@ -101,9 +85,7 @@ module.exports = (defaultOptions = {}, fs = fsUtils, path = pathUtils) => {
             const cacheableUrl = path.getCacheableUrl(url, options.useQueryParamsInCacheKey);
             const filePath = path.getImageFilePath(cacheableUrl, options.cacheLocation);
             // remove file from cache
-            return options.urlCache.remove(cacheableUrl)
-                // remove file from disc
-                .then(() => fs.deleteFile(filePath));
+            return fs.deleteFile(filePath);
         },
 
         /**
