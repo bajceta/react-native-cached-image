@@ -6,6 +6,8 @@ const fsUtils = require('./utils/fsUtils');
 const pathUtils = require('./utils/pathUtils');
 const MemoryCache = require('react-native-clcasher/MemoryCache').default;
 
+const cache = {};
+
 module.exports = (defaultOptions = {}, fs = fsUtils, path = pathUtils) => {
 
     const defaultDefaultOptions = {
@@ -17,6 +19,7 @@ module.exports = (defaultOptions = {}, fs = fsUtils, path = pathUtils) => {
         urlCache: MemoryCache,
     };
 
+    
     // apply default options
     _.defaults(defaultOptions, defaultDefaultOptions);
 
@@ -34,15 +37,23 @@ module.exports = (defaultOptions = {}, fs = fsUtils, path = pathUtils) => {
         const cacheableUrl = path.getCacheableUrl(url, options.useQueryParamsInCacheKey);
         const filePath = path.getImageFilePath(cacheableUrl, options.cacheLocation);
         
-        return fsUtils.exists(filePath)
-          .then((exists) => {
-            if (exists) {
-              return filePath;
-            } 
-            throw new Error('file does not exist' , filePath);
-          })
-          .catch(() => getCachedFile(filePath)
-                   .then(() => filePath))
+        if (cache[cacheableUrl]){
+          return Promise.resolve(cache[cacheableUrl]);
+        } else {
+          return fsUtils.exists(filePath)
+            .then((exists) => {
+              if (exists) {
+                cache[cacheableUrl] = filePath;
+                return filePath;
+              } 
+              throw new Error('file does not exist' , filePath);
+            })
+            .catch(() => getCachedFile(filePath)
+                     .then(() => { 
+                       cache[cacheableUrl]=filePath;
+                       return filePath;
+                     }))
+        }
     }
 
     return {
@@ -90,6 +101,7 @@ module.exports = (defaultOptions = {}, fs = fsUtils, path = pathUtils) => {
             const cacheableUrl = path.getCacheableUrl(url, options.useQueryParamsInCacheKey);
             const filePath = path.getImageFilePath(cacheableUrl, options.cacheLocation);
             // remove file from cache
+            delete cache[cacheableUrl];
             return fs.deleteFile(filePath);
         },
 
