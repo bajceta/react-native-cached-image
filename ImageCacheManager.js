@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const fs = require('fs');
 
 const fsUtils = require('./utils/fsUtils');
 const pathUtils = require('./utils/pathUtils');
